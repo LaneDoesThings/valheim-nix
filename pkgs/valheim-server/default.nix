@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
       binaryBytecode
       binaryNativeCode
     ];
-    license = licenses.MIT;
-    maintainers = with maintainers; [LaneDoesThings];
-    platforms = ["x86_64-linux"];
+    license = licenses.mit;
+    maintainers = with maintainers; [ LaneDoesThings ];
+    platforms = [ "x86_64-linux" ];
   };
 })

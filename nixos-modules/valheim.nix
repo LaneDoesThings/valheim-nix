@@ -158,27 +158,27 @@ in
         );
       };
     };
-  };
 
-  networking.firewall = lib.mkIf cfg.openFirewall {
-    allowedUDPPorts = [
-      cfg.port
-      (cfg.port + 1) # Steam server browser
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedUDPPorts = [
+        cfg.port
+        (cfg.port + 1) # Steam server browser
+      ];
+    };
+
+    assertions = [
+      {
+        assertion = cfg.serverName != "";
+        message = "The server name must not be empty.";
+      }
+      {
+        assertion = cfg.worldName != "";
+        message = "The world name must not be empty.";
+      }
+      {
+        assertion = cfg.password != "";
+        message = "The password must not be empty.";
+      }
     ];
   };
-
-  assertions = [
-    {
-      assertion = cfg.serverName != "";
-      message = "The server name must not be empty.";
-    }
-    {
-      assertion = cfg.worldName != "";
-      message = "The world name must not be empty.";
-    }
-    {
-      assertion = cfg.password != "";
-      message = "The password must not be empty.";
-    }
-  ];
 }

@@ -50,6 +50,7 @@
               with pkgs;
               [
                 nixd
+                nix-output-monitor
               ]
               ++ lintersFor system;
           };
@@ -87,6 +88,7 @@
         in
         {
           valheim-server = pkgs.valheim-server;
+          valheim-server-unwrapped = pkgs.valheim-server-unwrapped;
         }
       );
     };

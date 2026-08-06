@@ -141,7 +141,7 @@ in {
           User = "valheim";
           ExecStart = lib.strings.concatStringsSep " " (
             [
-              "${pkgs.valhem-server}/bin/valheim-server"
+              "${pkgs.valheim-server}/bin/valheim-server"
               "-name \"${cfg.serverName}\""
             ]
             ++ (lib.lists.optional (cfg.worldName != null) "-world \"${cfg.worldName}\"")
@@ -149,8 +149,7 @@ in {
               "-port \"${toString cfg.port}\""
               "-password \"${cfg.password}\""
             ]
-            ++ (lib.lists.optional cfg.crossplay "-crossplay")
-          );
+                      );
         };
       };
     };

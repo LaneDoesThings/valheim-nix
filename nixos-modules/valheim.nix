@@ -1,16 +1,15 @@
-{ self, steam-fetcher }:
 {
+  self,
+  steam-fetcher,
+}: {
   config,
   pkgs,
   lib,
   ...
-}:
-
-let
+}: let
   cfg = config.services.valheim;
   stateDir = "/var/lib/valheim";
-in
-{
+in {
   options.services.valheim = {
     enable = lib.mkEnableOption (lib.mdDoc "Valheim Dedicated Server");
 
@@ -61,7 +60,7 @@ in
 
     adminList = lib.mkOption {
       type = with lib.types; listOf str;
-      default = [ ];
+      default = [];
       example = [
         "72057602627862526"
         "72057602627862527"
@@ -75,7 +74,7 @@ in
 
     permittedList = lib.mkOption {
       type = with lib.types; listOf str;
-      default = [ ];
+      default = [];
       example = [
         "72057602627862526"
         "72057602627862527"
@@ -90,7 +89,7 @@ in
 
     bannedList = lib.mkOption {
       type = with lib.types; listOf str;
-      default = [ ];
+      default = [];
       example = [
         "72057602627862526"
         "72057602627862527"
@@ -115,29 +114,27 @@ in
           home = stateDir;
           createHome = true;
         };
-        groups.valheim = { };
+        groups.valheim = {};
       };
 
       systemd.services.valheim = {
         description = "Valheim dedicated server";
-        requires = [ "network.target" ];
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+        requires = ["network.target"];
+        after = ["network.target"];
+        wantedBy = ["multi-user.target"];
 
-        preStart =
-          let
-            createListFile = name: list: ''
-              echo "// List of Steam IDs for ${name} ONE per line
-              ${lib.strings.concatStringsSep "\n" list}" > ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
-              chown valheim:valheim ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
-            '';
-          in
-          ''
-            mkdir -p ${stateDir}/.config/unity3d/IronGate/Valheim
-            ${createListFile "adminlist.txt" cfg.adminList}
-            ${createListFile "permittedlist.txt" cfg.permittedList}
-            ${createListFile "bannedlist.txt" cfg.bannedList}
+        preStart = let
+          createListFile = name: list: ''
+            echo "// List of Steam IDs for ${name} ONE per line
+            ${lib.strings.concatStringsSep "\n" list}" > ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
+            chown valheim:valheim ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
           '';
+        in ''
+          mkdir -p ${stateDir}/.config/unity3d/IronGate/Valheim
+          ${createListFile "adminlist.txt" cfg.adminList}
+          ${createListFile "permittedlist.txt" cfg.permittedList}
+          ${createListFile "bannedlist.txt" cfg.bannedList}
+        '';
 
         serviceConfig = {
           Type = "exec";

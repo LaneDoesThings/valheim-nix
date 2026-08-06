@@ -5,7 +5,7 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   name = "valheim-server";
-  version = "0.219.13";
+  version = "0.0.1a";
   src = fetchSteam {
     inherit (finalAttrs) name;
     appId = "896660";
@@ -43,8 +43,8 @@ stdenv.mkDerivation (finalAttrs: {
       binaryBytecode
       binaryNativeCode
     ];
-    license = licenses.unfree;
-    maintainers = with maintainers; [ aidalgol ];
-    platforms = [ "x86_64-linux" ];
+    license = licenses.MIT;
+    maintainers = with maintainers; [LaneDoesThings];
+    platforms = ["x86_64-linux"];
   };
 })

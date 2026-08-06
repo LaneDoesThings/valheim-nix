@@ -103,82 +103,82 @@ in
         These users will be banned from the server.
       '';
     };
+  };
 
-    config = lib.mkIf cfg.enable {
-      nixpkgs.overlays = [
-        self.overlays.default
-        steam-fetcher.overlays.default
-      ];
+  config = lib.mkIf cfg.enable {
+    nixpkgs.overlays = [
+      self.overlays.default
+      steam-fetcher.overlays.default
+    ];
 
-      users = {
-        users.valheim = {
-          isSystemUser = true;
-          group = "valheim";
-          home = stateDir;
-          createHome = true;
-        };
-        groups.valheim = { };
+    users = {
+      users.valheim = {
+        isSystemUser = true;
+        group = "valheim";
+        home = stateDir;
+        createHome = true;
       };
+      groups.valheim = { };
+    };
 
-      systemd.services.valheim = {
-        description = "Valheim dedicated server";
-        requires = [ "network.target" ];
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
+    systemd.services.valheim = {
+      description = "Valheim dedicated server";
+      requires = [ "network.target" ];
+      after = [ "network.target" ];
+      wantedBy = [ "multi-user.target" ];
 
-        preStart =
-          let
-            createListFile = name: list: ''
-              echo "// List of Steam IDs for ${name} ONE per line
-              ${lib.strings.concatStringsSep "\n" list}" > ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
-              chown valheim:valheim ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
-            '';
-          in
-          ''
-            mkdir -p ${stateDir}/.config/unity3d/IronGate/Valheim
-            ${createListFile "adminlist.txt" cfg.adminList}
-            ${createListFile "permittedlist.txt" cfg.permittedList}
-            ${createListFile "bannedlist.txt" cfg.bannedList}
+      preStart =
+        let
+          createListFile = name: list: ''
+            echo "// List of Steam IDs for ${name} ONE per line
+            ${lib.strings.concatStringsSep "\n" list}" > ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
+            chown valheim:valheim ${stateDir}/.config/unity3d/IronGate/Valheim/${name}
           '';
+        in
+        ''
+          mkdir -p ${stateDir}/.config/unity3d/IronGate/Valheim
+          ${createListFile "adminlist.txt" cfg.adminList}
+          ${createListFile "permittedlist.txt" cfg.permittedList}
+          ${createListFile "bannedlist.txt" cfg.bannedList}
+        '';
 
-        serviceConfig = {
-          Type = "exec";
-          User = "valheim";
-          ExecStart = lib.strings.concatStringsSep " " (
-            [
-              "${pkgs.valheim-server}/bin/valheim-server"
-              "-name \"${cfg.serverName}\""
-            ]
-            ++ (lib.lists.optional (cfg.worldName != null) "-world \"${cfg.worldName}\"")
-            ++ [
-              "-port \"${toString cfg.port}\""
-              "-password \"${cfg.password}\""
-            ]
-          );
-        };
+      serviceConfig = {
+        Type = "exec";
+        User = "valheim";
+        ExecStart = lib.strings.concatStringsSep " " (
+          [
+            "${pkgs.valheim-server}/bin/valheim-server"
+            "-name \"${cfg.serverName}\""
+          ]
+          ++ (lib.lists.optional (cfg.worldName != null) "-world \"${cfg.worldName}\"")
+          ++ [
+            "-port \"${toString cfg.port}\""
+            "-password \"${cfg.password}\""
+          ]
+        );
       };
     };
+  };
 
-    networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedUDPPorts = [
-        cfg.port
-        (cfg.port + 1) # Steam server browser
-      ];
-    };
-
-    assertions = [
-      {
-        assertion = cfg.serverName != "";
-        message = "The server name must not be empty.";
-      }
-      {
-        assertion = cfg.worldName != "";
-        message = "The world name must not be empty.";
-      }
-      {
-        assertion = cfg.password != "";
-        message = "The password must not be empty.";
-      }
+  networking.firewall = lib.mkIf cfg.openFirewall {
+    allowedUDPPorts = [
+      cfg.port
+      (cfg.port + 1) # Steam server browser
     ];
   };
+
+  assertions = [
+    {
+      assertion = cfg.serverName != "";
+      message = "The server name must not be empty.";
+    }
+    {
+      assertion = cfg.worldName != "";
+      message = "The world name must not be empty.";
+    }
+    {
+      assertion = cfg.password != "";
+      message = "The password must not be empty.";
+    }
+  ];
 }

@@ -107,7 +107,7 @@ in
 
   config = lib.mkIf cfg.enable {
     nixpkgs.overlays = [
-      self.overlay.default
+      self.overlays.default
       steam-fetcher.overlay
     ];
 

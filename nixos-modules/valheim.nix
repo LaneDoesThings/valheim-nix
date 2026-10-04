@@ -149,6 +149,8 @@ in
           [
             "${pkgs.valheim-server}/bin/valheim-server"
             "-name \"${cfg.serverName}\""
+            "-batchmode"
+            "-nographics"
           ]
           ++ (lib.lists.optional (cfg.worldName != null) "-world \"${cfg.worldName}\"")
           ++ [

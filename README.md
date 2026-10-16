@@ -1,9 +1,3 @@
-# **Archived: Feb 2, 2025**
-I have not played Valheim in a few years now, and so I am no longer in a
-good position to maintain this flake.  It may still be useful as a starting
-point for others, and as an example of how to use the
-[community Steam fetcher](https://github.com/nix-community/steam-fetcher).
-
 # Valheim Server Flake
 A Nix flake for the Valheim dedicated server, providing both an overlay and a NixOS module.
 
@@ -14,26 +8,26 @@ Add this flake as an input, and add the NixOS module.  Your config should look s
 ```nix
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
-    valheim-server = {
-      url = "github:aidalgol/valheim-server-flake";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    
+    valheim-nix = {
+      url = "github:LaneDoesThings/valheim-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = {
-    self,
-    nixpkgs,
-    valheim-server,
-  }: let
+  
+  outputs = inputs@{ self, nixpkgs }:
+  let
     system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
   in {
-    nixosConfigurations.my-server= nixpkgs.lib.nixosSystem {
-      inherit system;
+    nixosConfigurations.HOSTNAME = nixpkgs.lib.nixosSystem {
       modules = [
         ./configuration.nix
         valheim-server.nixosModules.default
       ];
+      specialArgs = {
+        inherit inputs;
+      };
     };
   };
 }
@@ -41,11 +35,9 @@ Add this flake as an input, and add the NixOS module.  Your config should look s
 
 Then in your `configuration.nix`,
 ```nix
+{ config, pkgs, ...  }:
+
 {
-  config,
-  pkgs,
-  ...  
-}: {
   # ...
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
@@ -55,26 +47,11 @@ Then in your `configuration.nix`,
   # ...
   services.valheim = {
     enable = true;
-    serverName = "Some cozy server";
-    worldName = "Midgard";
+    serverName = "Serverheim";
+    worldName = "Worldheim";
     openFirewall = true;
     password = "sekkritpasswd";
-    # If you want to use BepInEx mods.
-    bepinexMods = [
-      # This does NOT fetch mod dependencies.  You need to add those manually,
-      # if there are any (besides BepInEx).
-      (pkgs.fetchValheimThunderstoreMod {
-        owner = "Somebody";
-        name = "SomeMod";
-        version = "x.y.z";
-        hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-      })
-      # ...
-    ];
-    bepinexConfigs = [
-      ./some_mod.cfg
-      # ...
-    ];
+  #...
   };
   # ...
 }
@@ -98,6 +75,3 @@ Note that `nixos-rebuild switch` automatically restarts the service if any attri
 # Show live log from the service.
 $ journalctl -u valheim -f
 ```
-
-## Notes on using mods
-Because BepInEx (the mod framework used by just about every Valheim mod) must both be installed in-tree with Valheim, and to be able to write to various files in the directory tree, we cannot run the modded Valheim server from the Nix store.  To work around this without completely giving up on immutability, we copy the files out of the Nix store to a directory under `/var/lib/valheim` and run from there, but wipe and rebuild this directory on each launch.
